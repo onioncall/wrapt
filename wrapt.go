@@ -54,10 +54,9 @@ func WrapArray(s string, tabsize int) []string {
 
 	startingPos := 0
 	endingPos := 0
-	for range 100000 {
+	for range 10000 {
 		// if we don't contain a breaking character, return early
 		if !strings.Contains(s[startingPos:], " ") {
-			fmt.Println("break from contains")
 			break
 		}
 		if startingPos + w > len(s) - 1 {
