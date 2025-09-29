@@ -18,7 +18,7 @@ func TestWrapt_Wrap(t *testing.T) {
 			expected:     "hello world",
 		},
 		{
-			name:         "One Break",
+			name:         "Multiple Breaks",
 			input:        "this is a longer string that needs to be wrapped",
 			terminalWidth: 20,
 			expected:     "this is a longer \nstring that needs \nto be wrapped",
