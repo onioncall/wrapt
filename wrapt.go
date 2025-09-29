@@ -1,78 +1,73 @@
 package wrapt
 
 import (
-	"fmt"
-	"os"
 	"strings"
-
-	"golang.org/x/term"
 )
 
+// text: string to be wrapped
+// terminalWidth: terminal width
 // Returns a string, with line breaks for each line
-func Wrap(s string) string {
-	w, _, err := term.GetSize(int(os.Stdout.Fd()))
-	if err != nil {
-		fmt.Println("Error getting terminal size:", err)
-	}	
-
-	if len(s) < w {
-		return s
+func Wrap(text string, terminalWidth int) string {
+	if len(text) < terminalWidth {
+		return text
 	}
 
 	pos := 0
 	// we're going to set an upper bound for this loop
 	for range 10000 {
 		// if we don't contain a breaking character, return early
-		if !strings.Contains(s[pos:], " ") {
+		if !strings.Contains(text[pos:], " ") {
 			break
 		}
-		if pos + w > len(s) - 1 {
+		if pos + terminalWidth > len(text) - 1 {
 			break
 		} 	
-		pos += w
+		pos += terminalWidth
 
-		pos = lastSpaceBeforePosition(s, pos)
-		s = insertBreak(s, pos + 1)
+		pos = lastSpaceBeforePosition(text, pos)
+		text = insertBreak(text, pos + 1)
 	}
 
-	return s
+	return text
 }
 
+// text: string to be wrapped
+// marginSize: the margin to be applied on either side of the printed string
+// terminalWidth: terminal width
 // Returns an array of strings, representing each line to be printed
-func WrapArray(s string, tabsize int) []string {
-	w, _, err := term.GetSize(int(os.Stdout.Fd()))
-	if err != nil {
-		fmt.Println("Error getting terminal size:", err)
-	}	
+func WrapArray(text string, marginSize int, terminalWidth int) []string {
+    terminalWidth -= marginSize
 
-	w -= tabsize
+    arr := []string{}
+    if len(text) < terminalWidth {
+        return append(arr, text)
+    }
 
-	arr := []string{}
-	if len(s) < w {
-		return append(arr, s)
-	}
-
-	startingPos := 0
-	endingPos := 0
-	for range 10000 {
-		// if we don't contain a breaking character, return early
-		if !strings.Contains(s[startingPos:], " ") {
-			break
-		}
-		if startingPos + w > len(s) - 1 {
-			w = len(s[startingPos:])
-		} 	
-
-		endingPos += w
-		endingPos = lastSpaceBeforePosition(s, endingPos)
-
-		line := s[startingPos:endingPos]
-		startingPos = endingPos + 1
-
-		arr = append(arr, line)
-	}
-
-	return arr
+    startingPos := 0
+    
+    for range 10000 {
+        if startingPos >= len(text) {
+            break
+        }
+        
+        endingPos := startingPos + terminalWidth
+        if endingPos >= len(text) {
+            arr = append(arr, text[startingPos:])
+            break
+        }
+        
+        endingPos = lastSpaceBeforePosition(text, endingPos)
+        if endingPos == -1 || endingPos <= startingPos {
+            arr = append(arr, text[startingPos:])
+            break
+        }
+        
+        line := text[startingPos:endingPos]
+        arr = append(arr, line)
+        startingPos = endingPos + 1
+    }
+    
+    return arr
 }
 
 func lastSpaceBeforePosition(s string, pos int) int {
